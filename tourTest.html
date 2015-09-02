@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>this</title>
+	<style type="text/css">
+	html,body{
+		margin: 0;
+		padding: 0;
+	}
+	div.two{
+		background-color: red;
+		z-index: 1;
+		height: 300px;
+	}
+	nav{
+		background-color: yellow;
+		z-index: 1;
+		height: 20px;
+		width: 100px;
+
+		border-radius: 8px;
+	}
+	aside{
+		background-color: blue;
+		z-index: 1;
+	}
+	#sdf{
+		height: 300px;
+		width: 300px;
+		background: tomato;
+	}
+	</style>
+	<script type="text/javascript" src="jquery.js"></script>
+	<script type="text/javascript" src="tourhouse.js"></script>
+	<link rel="stylesheet" media="screen" type="text/css" href="tourhousejs.css">
+</head>
+<body>
+
+<div class="two">awesome</div>
+
+<nav id="cool">mewmewmew</nav>
+<aside class="two">wowee</aside>
+<div id="sdf"></div>
+<script type="text/javascript">
+	var el = document.getElementById("cool");
+	var two = document.getElementsByClassName("two");
+	var a = new TourHouse();
+	a.changeDefaultProperties({exitButton: "SOMETHING.png"});
+	a.properties.showX = "false";
+	var b = new TourHouse();
+	b.properties.showPrev = "false";
+	console.log("val of a   ", a);
+	console.log("val of b   ", b);
+	// a.push(el, "first");
+	// a.push(two, "two", {appearsBelow: true});
+	// a.start();
+</script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+html, body{
+	height: 100%;
+	width: 100%;
+}
+/*wraps entire button, text etc.*/
+/*don't touch*/
+#tour_house_wrapper{
+	position: absolute;
+	z-index: 9999;
+	height: 100%;
+	width: 100%;
+}
+#can_keep{
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	overflow: hidden;
+}
+/* canvas that creates the screen */
+/*also don't touch*/
+#tour_house_overlay{
+	position: fixed;
+	overflow: hidden;
+}
+
+
+/*wraps the text elements*/
+.tour_house_text_wrapper{
+	width: 250px;
+	height: auto;
+
+	border: solid #efefef 2px;
+	border-radius: 8px;
+	text-align: center;
+
+	background-color: red;
+	color: white;
+}
+/*h3 for the text*/
+.tour_texts{
+	
+}
+
+
+
