@@ -2,16 +2,16 @@
 var TourHouse = function(elements, text){
 	var scope = (!(this instanceof TourHouse)) ? new TourHouse : this;
 
-	var canvas; //screen
-	var parent; //last element of importance
+	var canvas;
 
-	var deckBox = document.createElement('div'); //wrapper for all the text elements
-		deckBox.id = "tour_house_wrapper";
+	var deckBox;
+
+	var deck = [];
 
 	var currentStep = 0;
 	var DATA = {
 		AUTHOUR: "Nadia S.canvas.",
-		VERSION: "0.3.1",
+		VERSION: "1.3.1",
 		LATEST: "19 June, 2015"
 	};
 
@@ -20,6 +20,7 @@ var TourHouse = function(elements, text){
 	var card = function(element, text){
 		var self = this;
 			this.elements = element;
+			this.pos = null;
 			this.texts = text;
 			this.textProp = {
 				relativeToOrderedElement: true,
@@ -54,20 +55,28 @@ var TourHouse = function(elements, text){
 				ctx.lineJoin = "round";
 				ctx.lineWidth = radius;
 
+				var n_x = x+(radius/2),
+					n_y = y+(radius/2)+$(window).scrollTop(),
+					n_w = w - radius,
+					n_h = h - radius;
 				//make rectangle with rounded corners
-				ctx.strokeRect(x+(radius/2), y+(radius/2), 
-								w - radius, h - radius);
+				ctx.strokeRect(n_x, n_y, 
+								n_w, n_h);
 
-				ctx.fillRect(x+(radius/2), y+(radius/2), 
-								w - radius, h - radius);
+				ctx.fillRect(n_x, n_y, 
+								n_w, n_h);
+
+				deck[currentStep].pos = {x: n_x, y: n_y, width: n_w, height: n_h};
 			}
-			else
-				ctx.fillRect(trueShape.left, trueShape.top, w, h);
+			else{
+				ctx.fillRect(trueShape.left, trueShape.top+$(window).scrollTop(), w, h);
+				deck[currentStep].pos = {x: x, y: y, width: w, height: h};
+			}
 		}
 
 		function addText(txt, element){
-			var txtProp = scope.deck[currentStep].textProp;
-
+			var txtProp = deck[currentStep].textProp;
+			var pos = deck[currentStep].pos;
 			var text = document.createElement("h3");
 				text.className = txtProp.className;
 				text.innerHTML = txt;
@@ -83,34 +92,33 @@ var TourHouse = function(elements, text){
 			if(!txtProp.show)
 				return 1;
 			//positioning container on screen
-			var textBox = container.getBoundingClientRect(), //get styles
-			    elBox = element.getBoundingClientRect();
+			var textBox = container.getBoundingClientRect(); //get styles
 
 			console.log(txtProp.appearsBelow);
-		//if the position is relative to the element
+			//if the position is relative to the element
 			if(txtProp.relativeToOrderedElement){
 				//if above element
 				if(!txtProp.appearsBelow && txtProp.position === null){
 					console.log("ABOVE");
-					var totalY =  elBox.top - txtProp.margin - textBox.height;
+					var totalY =  pos.y - txtProp.margin - textBox.height;
 					//check to make sure textbox does not go beyond top of page
 					if(totalY < 0)
 						console.warn('text element containing: ' ,txt, 'goes beyond the visible page. Please change appearsBelow to true');
 					else{
-						container.style.left = elBox.left + "px";
+						container.style.left = pos.x + "px";
 						container.style.top = totalY + "px";
 					}
 				}
 				//if below element
 				else if(txtProp.appearsBelow && txtProp.position === null){
-					var totalY =  (elBox.top+elBox.height) + txtProp.margin + textBox.height;
+					var totalY =  (pos.y+pos.height) + txtProp.margin + textBox.height;
 
 					//check to make sure textbox does not go beyond top of page
 					if(totalY > $(window).height())
 						console.warn('text element containing: ' ,txt, 'goes beyond the visible page. Please change appearsBelow to false');
 					else{
-						container.style.left = elBox.left + "px";
-						container.style.top = ((elBox.top+elBox.height) + txtProp.margin) + "px";
+						container.style.left = pos.x + "px";
+						container.style.top = ((pos.y+pos.height) + txtProp.margin) + "px";
 					}
 				}
 				//cannot have unique and relative position at same time
@@ -133,33 +141,46 @@ var TourHouse = function(elements, text){
 			console.log(deckBox);
 		}
 
+		function addButtons(){
+			if(!scope.properties.showButtons)
+				return 1;
+
+			var next = document.createElement("button");
+			var prev = document.createElement("button");
+
+			next.innerHTML = scope.properties.nextLabel;
+			prev.innerHTML = scope.properties.prevLable;
+
+			next.className = "tour_house_step_button";
+			prev.className = "tour_house_step_button";
+
+			deckBox.appendChild(next);
+			deckBox.appendChild(prev);
+
+			next.addEventListener("click", scope.goToNext, false);
+			prev.addEventListener("click", scope.goToPrev, false);
+		}
+
 		//prepend the screen and set the style for all necessary elements
 		function applyStyles(){
 			var old_p = document.body.firstChild;
 
+			canvas = document.createElement("canvas"); //screen
+			canvas.id = "tour_house_overlay";
+			deckBox = document.createElement('div'); //wrapper for all the text elements
+			deckBox.id = "tour_house_wrapper";
+			canvas.appendChild(deckBox);
+
 			//get full rectangle for element
 			var j = currentStep;
-			var sdeck = scope.deck[j];
+			var sdeck = deck[j];
 			var isSingleElement = singleElement(sdeck.elements);
 
-			// if(isSingleElement){
-			// 	parent = sdeck.elements;
-			// }
-			// else{	
-			// 	//check how far down each element goes
-			// }
-
-			//canvas element style
-			//new canvas element
 			canvas = document.createElement('canvas');
-			canvas.height = $(window).height();
+			canvas.height = $(window).height() + 2000;
 			canvas.width = $(window).width();
 			canvas.style.opacity = scope.properties.screenOpacity;
 			canvas.style.position = "absolute";
-
-			//inserting canvas on screen
-			document.body.insertBefore(canvas,document.body.firstChild);
-			parent = document.body.firstChild;
 
 			var context = canvas.getContext("2d");
 			//screen
@@ -210,7 +231,10 @@ var TourHouse = function(elements, text){
 				}
 			}
 
-			document.body.insertBefore(deckBox, parent);
+			addButtons();
+
+			document.body.insertBefore(canvas, document.body.firstChild);
+			document.body.insertBefore(deckBox, document.body.firstChild);
 			//if buttons are disabled don't even bother...
 			if(!scope.properties.showButtons) return 1;
 
@@ -242,12 +266,14 @@ var TourHouse = function(elements, text){
 
 		function clear(){
 
+			document.body.removeChild(document.body.firstChild);
+			document.body.removeChild(document.body.firstChild);
+
 		}
 
 		//API
 
 		this.progress = 0;
-		this.deck = [];
 
 		this.properties = {
 			screenColor: "#000000",
@@ -287,27 +313,36 @@ var TourHouse = function(elements, text){
 			}
 
 			a.position = currentSize++;
-			scope.deck.push(a);
+			deck.push(a);
 		};
 
 		this.goToNext = function(){
-			//clear current
 			if(currentStep+1 >= currentSize){
 				scope.stop();
 				return 1;
 			}
-			//clear()
+			clear();
 			currentStep++;
 			applyStyles();
+		};
+
+		this.goToPrev = function(){
+			if(currentStep-1 >= 0){
+				clear();
+				currentStep--;
+				applyStyles();
+			}
 		};
 
 		this.start = function(){
 			applyStyles();
 		}
 
-		$(window).resize(applyStyles);
+		this.stop = function(){
+			clear();
+			$(window).off("click", scope.goToNext);
+		}
 
 		return scope;
 	}
-})(window)
 
